@@ -20,12 +20,10 @@ check_has_php(){
     #. The PHP binary installed by PocketMine-MP_Installer.
     if [[ -f ./php5/bin/php ]]; then
         mkdir -p -m 0777 bin/
-        mv -f ./php5/bin/php ./bin/php
-        #rm -rf ./php5/
+        cp ./php5/bin/php ./bin/php
     elif [[ -f ./bin/php5/bin/php ]]; then
         mkdir -p -m 0777 bin/
-        mv -f ./bin/php5/bin/php ./bin/php
-        #rm -rf ./bin/php5/
+        cp ./bin/php5/bin/php ./bin/php
     fi
     #. do my stuff
     if [[ -f ./bin/php ]]; then
@@ -49,7 +47,7 @@ check_has_tmux(){
 check_if_in_tmux(){
     if [[ "$TERM" == 'screen' ]] || [[ -n $TMUX ]]; then
         echo "Can't Create/Attach session in other tmux session!"
-        exit 1
+        #exit 1  but try anyway...
     fi
 }
 
@@ -81,26 +79,27 @@ unbind_key(){
 }
 
 start_server(){
+    echo "starting tmux session $SESSION"
     tmux new-session -d -s $SESSION
 if [[ -f $PMMP ]]; then
     echo -e "found $PNMP - starting"
-    tmux new-window -t "$SESSION":1 -n Console \
+    tmux new-window -t "$SESSION" -n Console \
         "$PHP $PHP_OPTS $PMMP"
 elif [[ -f $StartScript ]]; then
     echo -e "found $StartScript - starting"
-    tmux new-window -t "$SESSION":1 -n Console \
+    tmux new-window -t "$SESSION" -n Console \
         "$StartScript"
 else
     echo -e "unable to find $PNMP or $StartScript"
 fi
     check_result 'Start'
-    tmux kill-window -t "$SESSION":0  
+    #tmux kill-window -t "$SESSION":0  
     bind_key
 }
 
 attach_console(){
     check_if_in_tmux
-    tmux attach-session -t "$SESSION" #\; set-option -g prefix $PREFIX
+    tmux attach-session -t "$SESSION" # 
 }
 
 detach_clients(){
@@ -152,6 +151,7 @@ stop_server(){
         fi
         #. stop the server
         send_command "stop"
+	send_command "exit"
         sleep 1
         try=$(($try+1))
         if [[ "$try" -ge "$MAX_TRY" ]]; then
