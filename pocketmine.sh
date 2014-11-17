@@ -14,6 +14,7 @@ MAX_TRY='600'
 SESSION='PocketMine'
 PREFIX='C-a'
 CMDS_BEFORE_STOP=''
+DISTR='beta'
 
 #= functions ==================================================================
 check_has_php(){
@@ -216,6 +217,22 @@ strip_color(){
     cat -v $1 | sed -e 's#\^\[\[\([0-9]*;*\)*m##g'
 }
 
+get_update(){
+    if [[ -z $(session_exist) ]]; then
+        echo -e "stopping server so we can update safely"
+        stop_server
+        echo -e "getting latest $DISTR"
+        wget -q -O - http://get.pocketmine.net/ | bash -s - -v $DISTR
+	echo -e "updated, restarting server"
+        start_server
+        echo -e "pocketmine updated, and restarted"
+    else
+        echo -e "getting latest $DISTR"
+       wget -q -O - http://get.pocketmine.net/ | bash -s - -v $DISTR
+        echo -e "pocketmine updated, was not running"
+    fi
+}
+
 usage(){
     echo '
   ____            _        _   __  __ _            
@@ -238,6 +255,7 @@ usage(){
     echo -e "  log-rotate\t\tLog rotate."
     echo -e "  remake-world\t\tRegenerate worlds and keep old worlds. (need restart)"
     echo -e "  purge-world\t\tRegenerate worlds. (need restart)"
+    echo -e "  update\t\tUpdates to latest build of PocketMine. (will stop server)"
 }
 
 #= main program ===============================================================
@@ -283,6 +301,9 @@ case $1 in
         ;;
     plainlog)
         strip_color "$2"
+        ;;
+    update)
+        get_update
         ;;
     *)
         usage
