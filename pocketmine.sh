@@ -3,6 +3,7 @@
 PHP='./bin/php'
 PHP_OPTS='-d enable_dl=On -d date.timezone=Asia/Taipei'
 PMMP='PocketMine-MP.php'
+StartScript='./start.sh'
 WORLD_WORLD='world'
 WORLDS="$WORLD_WORLD"
 MAP_DIR='worlds'
@@ -21,6 +22,10 @@ check_has_php(){
         mkdir -p -m 0777 bin/
         mv -f ./php5/bin/php ./bin/php
         #rm -rf ./php5/
+    elif [[ -f ./bin/php5/bin/php ]]; then
+        mkdir -p -m 0777 bin/
+        mv -f ./bin/php5/bin/php ./bin/php
+        #rm -rf ./bin/php5/
     fi
     #. do my stuff
     if [[ -f ./bin/php ]]; then
@@ -77,8 +82,17 @@ unbind_key(){
 
 start_server(){
     tmux new-session -d -s $SESSION
+if [[ -f $PMMP ]]; then
+    echo -e "found $PNMP - starting"
     tmux new-window -t "$SESSION":1 -n Console \
         "$PHP $PHP_OPTS $PMMP"
+elif [[ -f $StartScript ]]; then
+    echo -e "found $StartScript - starting"
+    tmux new-window -t "$SESSION":1 -n Console \
+        "$StartScript"
+else
+    echo -e "unable to find $PNMP or $StartScript"
+fi
     check_result 'Start'
     tmux kill-window -t "$SESSION":0  
     bind_key
