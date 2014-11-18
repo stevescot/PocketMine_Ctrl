@@ -218,19 +218,8 @@ strip_color(){
 }
 
 get_update(){
-    if [[ -z $(session_exist) ]]; then
-        echo -e "stopping server so we can update safely"
-        stop_server
         echo -e "getting latest $DISTR"
         wget -q -O - http://get.pocketmine.net/ | bash -s - -v $DISTR
-	echo -e "updated, restarting server"
-        start_server
-        echo -e "pocketmine updated, and restarted"
-    else
-        echo -e "getting latest $DISTR"
-       wget -q -O - http://get.pocketmine.net/ | bash -s - -v $DISTR
-        echo -e "pocketmine updated, was not running"
-    fi
 }
 
 usage(){
@@ -303,8 +292,25 @@ case $1 in
         strip_color "$2"
         ;;
     update)
+    if [[ -z $(session_exist) ]]; then
+        echo -e "stopping server so we can update safely"
+        stop_server
         get_update
+    	echo -e "updated, restarting server"
+        start_server
+        echo -e "pocketmine updated, and restarted"
+    else
+	get_update
+    fi
         ;;
+    updaterestart)
+	echo -e "stopping server so we can update safely"
+        stop_server
+        get_update
+    	echo -e "updated, restarting server"
+        start_server
+        echo -e "pocketmine updated, (re)started"
+	;;
     *)
         usage
         ;;
